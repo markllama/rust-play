@@ -115,14 +115,32 @@ mod tests {
 	assert!(&Point { hx: 0, hy: 0 }.eq(&ORIGIN));
     }
 
-//    #[test]
-//    fn test_unit() {
+    #[test]
+    fn test_unit() {
 	// Each of the 6 unit vectors represents a 1 hex move in one of the "cardinal"
-	// directions.	
-//    }
+	// directions.
 
+	// unit vectors 0 and 3 are on the hx axis
+	assert!(UNIT[0].eq(&Point { hx: 0, hy: -1 }));
+	assert!(UNIT[3].eq(&Point { hx: 0, hy: 1 }));
+
+	// unit vectors 1 and 4 are on the hy axis
+	assert!(UNIT[1].eq(&Point { hx: 1, hy: 0 }));
+	assert!(UNIT[4].eq(&Point { hx: -1, hy: 0 }));
+
+	// unit vectors 2 and 5 are on the hx axis (hy - hx = 0)
+	assert!(UNIT[2].eq(&Point { hx: 1, hy: 1 }));
+	assert!(UNIT[5].eq(&Point { hx: -1, hy: -1 }));
+    }
 
     // test_hz()
+    #[test]
+    fn test_hz() {
+	assert_eq!(0, Point { hx: 0, hy: 0 }.hz() );
+	assert_eq!(1, Point { hx: 0, hy: 1 }.hz() );
+	assert_eq!(4, Point { hx: -2, hy: 2 }.hz() );
+	assert_eq!(-8, Point { hx: 9, hy: 1 }.hz() );
+    }
 
     // test_add()
 
