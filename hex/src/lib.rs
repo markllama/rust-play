@@ -26,13 +26,15 @@ pub struct Point {
 pub const ORIGIN:Point = Point { hx: 0, hy: 0 };
 
 /// Define a unit vector in all 6 directions
+/// 0 and 3 are "on the hx axis" and 1,4 are "on the hy axis"
+/// That means 2,5 are "on the hz axis" because hy - hx == 0
 pub const UNIT:[Point; 6] = [
-    Point { hx: 0, hy: -1 },
-    Point { hx: 1, hy: 0 },
-    Point { hx: 1, hy: 1 },
-    Point { hx: 0, hy: 1 },
-    Point { hx: -1, hy: 0 },
-    Point { hx: -1, hy: -1 }
+    Point { hx: 0, hy: -1 },    // direction 0
+    Point { hx: 1, hy: 0 },     // direction 1
+    Point { hx: 1, hy: 1 },     // direction 2
+    Point { hx: 0, hy: 1 },     // direction 3
+    Point { hx: -1, hy: 0 },    // direction 4
+    Point { hx: -1, hy: -1 }    // direction 5
 ];
 
 impl Point {
@@ -44,17 +46,17 @@ impl Point {
     }
 
     /// Two hex points are equal when both elements are equal
-    pub fn eq(&self, other: Point) -> bool {
+    pub fn eq(&self, other: &Point) -> bool {
 	self.hx == other.hx && self.hy == other.hy
     }
 
     /// the sum of two points is just sum of both components
-    pub fn add(&self, other: Point) -> Point {
+    pub fn add(&self, other: &Point) -> Point {
 	Point { hx: self.hx + other.hx, hy: self.hy + other.hy }
     }
 
     /// the diff of two points is just diff of both components
-    pub fn sub(&self, other: Point) -> Point {
+    pub fn sub(&self, other: &Point) -> Point {
 	Point { hx: self.hx - other.hx, hy: self.hy - other.hy }
     }
     
@@ -62,7 +64,7 @@ impl Point {
     /// because they are related by subtraction you can
     /// just add the three and divide by 2.
     /// See: [Axial Distance](https://www.redblobgames.com/grids/hexagons/#distances-axial)
-    pub fn distance(&self, other: Point) -> i32 {
+    pub fn distance(&self, other: &Point) -> i32 {
 	let diff = self.sub(other);
 	(diff.hx.abs() + diff.hy.abs() + (diff.hx + diff.hy).abs()) / 2
     }
@@ -93,17 +95,34 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_eq() {
+	// Just make sure that both components are checked
+	let h1 = Point { hx: 3, hy: -4 };
+	let h2 = Point { hx: 3, hy: -4 };
+	let h3 = Point { hx: -2, hy: 12 };
+	assert!(h1.eq(&h2));
+	assert!(h2.eq(&Point { hx: 3, hy: -4}));
+	assert!(Point { hx: -2, hy: 12 }.eq(&h3));
+    }
+    
+    #[test]
     fn test_origin() {
-        assert_eq!(ORIGIN.hx, 0);
+	// all three dimensions should be zero	
+        assert_eq!(ORIGIN.hx, 0);    
         assert_eq!(ORIGIN.hy, 0);
 	assert_eq!(ORIGIN.hz(), 0);
+	assert!(ORIGIN.eq(&Point { hx: 0, hy: 0 }));
+	assert!(&Point { hx: 0, hy: 0 }.eq(&ORIGIN));
     }
 
-    // test_unit()
+//    #[test]
+//    fn test_unit() {
+	// Each of the 6 unit vectors represents a 1 hex move in one of the "cardinal"
+	// directions.	
+//    }
+
 
     // test_hz()
-
-    // test_eq()
 
     // test_add()
 
