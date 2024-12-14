@@ -136,6 +136,7 @@ mod tests {
     // test_hz()
     #[test]
     fn test_hz() {
+	// the third axis is dependent on the other two. It is hy = hx
 	assert_eq!(0, Point { hx: 0, hy: 0 }.hz() );
 	assert_eq!(1, Point { hx: 0, hy: 1 }.hz() );
 	assert_eq!(4, Point { hx: -2, hy: 2 }.hz() );
@@ -143,8 +144,22 @@ mod tests {
     }
 
     // test_add()
+    #[test]
+    fn test_add() {
+	// hex arithmetic functions match cartesian ones
+	// Simply add or subtract the components
+	assert!(Point { hx: 4, hy: 7}.add(&Point { hx: -4, hy: -7 }).eq(&ORIGIN));
+	assert!(Point { hx: -3, hy: 4}.add(&Point { hx: 3, hy: -4 }).eq(&ORIGIN));
+    }
 
     // test_sub()
+    #[test]
+    fn test_sub() {
+	// hex arithmetic functions match cartesian ones
+	// Simply add or subtract the components
+	assert!(Point { hx: 4, hy: 7}.sub(&Point { hx: 4, hy: 7 }).eq(&ORIGIN));
+	assert!(Point { hx: -3, hy: 4}.sub(&Point { hx: -3, hy: 4 }).eq(&ORIGIN));	
+    }
 
     // test_distance()
 
