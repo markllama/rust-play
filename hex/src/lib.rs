@@ -17,6 +17,7 @@
 /// and so can be converted from one to the other if needed. 
 
 /// Each hex location is defined by two integers, hx and hy
+#[derive(Debug)] 
 pub struct Point {
     hx: i32,
     hy: i32
@@ -30,11 +31,11 @@ pub const ORIGIN:Point = Point { hx: 0, hy: 0 };
 /// That means 2,5 are "on the hz axis" because hy - hx == 0
 pub const UNIT:[Point; 6] = [
     Point { hx: 0, hy: -1 },    // direction 0
-    Point { hx: 1, hy: 0 },     // direction 1
-    Point { hx: 1, hy: 1 },     // direction 2
+    Point { hx: 1, hy: -1 },     // direction 1
+    Point { hx: 1, hy: 0 },     // direction 2
     Point { hx: 0, hy: 1 },     // direction 3
-    Point { hx: -1, hy: 0 },    // direction 4
-    Point { hx: -1, hy: -1 }    // direction 5
+    Point { hx: -1, hy: 1 },    // direction 4
+    Point { hx: -1, hy: 0 }    // direction 5
 ];
 
 impl Point {
@@ -66,7 +67,7 @@ impl Point {
     /// See: [Axial Distance](https://www.redblobgames.com/grids/hexagons/#distances-axial)
     pub fn distance(&self, other: &Point) -> i32 {
 	let diff = self.sub(other);
-	(diff.hx.abs() + diff.hy.abs() + (diff.hx + diff.hy).abs()) / 2
+	(diff.hx.abs() + (diff.hx + diff.hy).abs() + diff.hy.abs()) / 2
     }
 
     // pub fn line(&self, other: Point -> Vec<Point> {
@@ -125,12 +126,12 @@ mod tests {
 	assert!(UNIT[3].eq(&Point { hx: 0, hy: 1 }));
 
 	// unit vectors 1 and 4 are on the hy axis
-	assert!(UNIT[1].eq(&Point { hx: 1, hy: 0 }));
-	assert!(UNIT[4].eq(&Point { hx: -1, hy: 0 }));
+	assert!(UNIT[1].eq(&Point { hx: 1, hy: -1 }));
+	assert!(UNIT[4].eq(&Point { hx: -1, hy: 1 }));
 
 	// unit vectors 2 and 5 are on the hx axis (hy - hx = 0)
-	assert!(UNIT[2].eq(&Point { hx: 1, hy: 1 }));
-	assert!(UNIT[5].eq(&Point { hx: -1, hy: -1 }));
+	assert!(UNIT[2].eq(&Point { hx: 1, hy: 0 }));
+	assert!(UNIT[5].eq(&Point { hx: -1, hy: 0 }));
     }
 
     // test_hz()
@@ -166,7 +167,15 @@ mod tests {
     fn test_distance() {
 	// the distance between two hex points is the max of the absolute value
 	// of the three components.
-	
+	// for unit in &UNIT {
+	//   assert_eq!(ORIGIN.distance(unit), 1i32);
+	// }
+	assert_eq!(ORIGIN.distance(&UNIT[0]), 1i32);
+	assert_eq!(ORIGIN.distance(&UNIT[1]), 1i32);
+	assert_eq!(ORIGIN.distance(&UNIT[2]), 1i32);
+	assert_eq!(ORIGIN.distance(&UNIT[3]), 1i32);
+	assert_eq!(ORIGIN.distance(&UNIT[4]), 1i32);
+	assert_eq!(ORIGIN.distance(&UNIT[5]), 1i32);
 	
     }
 
