@@ -162,6 +162,13 @@ mod tests {
     }
 
     // test_distance()
+    #[test]
+    fn test_distance() {
+	// the distance between two hex points is the max of the absolute value
+	// of the three components.
+	
+	
+    }
 
     // test_line()
 }
