@@ -46,11 +46,6 @@ impl Point {
 	self.hy - self.hx
     }
 
-    /// Two hex points are equal when both elements are equal
-    pub fn eq(&self, other: &Point) -> bool {
-	self.hx == other.hx && self.hy == other.hy
-    }
-
     /// the sum of two points is just sum of both components
     pub fn add(&self, other: &Point) -> Point {
 	Point { hx: self.hx + other.hx, hy: self.hy + other.hy }
@@ -134,14 +129,14 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_eq() {
-	// Just make sure that both components are checked
+    fn test_partial_eq() {
 	let h1 = Point { hx: 3, hy: -4 };
 	let h2 = Point { hx: 3, hy: -4 };
 	let h3 = Point { hx: -2, hy: 12 };
-	assert!(h1.eq(&h2));
-	assert!(h2.eq(&Point { hx: 3, hy: -4}));
-	assert!(Point { hx: -2, hy: 12 }.eq(&h3));
+	assert_eq!(h1, h2);
+	assert_eq!(h1, Point { hx: 3, hy: -4});
+	assert_eq!(h3, Point { hx: -2, hy: 12 });
+	assert_ne!(h1, h3);
     }
     
     #[test]
@@ -150,8 +145,8 @@ mod tests {
         assert_eq!(ORIGIN.hx, 0);    
         assert_eq!(ORIGIN.hy, 0);
 	assert_eq!(ORIGIN.hz(), 0);
-	assert!(ORIGIN.eq(&Point { hx: 0, hy: 0 }));
-	assert!(&Point { hx: 0, hy: 0 }.eq(&ORIGIN));
+	assert_eq!(ORIGIN, Point { hx: 0, hy: 0 });
+	assert_eq!(Point { hx: 0, hy: 0 }, ORIGIN);
     }
 
     #[test]
@@ -160,16 +155,16 @@ mod tests {
 	// directions.
 
 	// unit vectors 0 and 3 are on the hx axis
-	assert!(UNIT[0].eq(&Point { hx: 0, hy: -1 }));
-	assert!(UNIT[3].eq(&Point { hx: 0, hy: 1 }));
+	assert_eq!(&UNIT[0], &Point { hx: 0, hy: -1 });
+	assert_eq!(&UNIT[3], &Point { hx: 0, hy: 1 });
 
 	// unit vectors 1 and 4 are on the hy axis
-	assert!(UNIT[1].eq(&Point { hx: 1, hy: -1 }));
-	assert!(UNIT[4].eq(&Point { hx: -1, hy: 1 }));
+	assert_eq!(&UNIT[1], &Point { hx: 1, hy: -1 });
+	assert_eq!(&UNIT[4], &Point { hx: -1, hy: 1 });
 
 	// unit vectors 2 and 5 are on the hx axis (hy - hx = 0)
-	assert!(UNIT[2].eq(&Point { hx: 1, hy: 0 }));
-	assert!(UNIT[5].eq(&Point { hx: -1, hy: 0 }));
+	assert_eq!(&UNIT[2], &Point { hx: 1, hy: 0 });
+	assert_eq!(&UNIT[5], &Point { hx: -1, hy: 0 });
     }
 
     // test_hz()
@@ -187,8 +182,8 @@ mod tests {
     fn test_add() {
 	// hex arithmetic functions match cartesian ones
 	// Simply add or subtract the components
-	assert!(Point { hx: 4, hy: 7}.add(&Point { hx: -4, hy: -7 }).eq(&ORIGIN));
-	assert!(Point { hx: -3, hy: 4}.add(&Point { hx: 3, hy: -4 }).eq(&ORIGIN));
+	assert_eq!(Point { hx: 4, hy: 7}.add(&Point { hx: -4, hy: -7 }), ORIGIN);
+	assert_eq!(Point { hx: -3, hy: 4}.add(&Point { hx: 3, hy: -4 }), ORIGIN);
     }
 
     // test_sub()
@@ -196,8 +191,8 @@ mod tests {
     fn test_sub() {
 	// hex arithmetic functions match cartesian ones
 	// Simply add or subtract the components
-	assert!(Point { hx: 4, hy: 7}.sub(&Point { hx: 4, hy: 7 }).eq(&ORIGIN));
-	assert!(Point { hx: -3, hy: 4}.sub(&Point { hx: -3, hy: 4 }).eq(&ORIGIN));	
+	assert_eq!(Point { hx: 4, hy: 7}.sub(&Point { hx: 4, hy: 7 }), ORIGIN);
+	assert_eq!(Point { hx: -3, hy: 4}.sub(&Point { hx: -3, hy: 4 }), ORIGIN);
     }
 
     // test_distance()
@@ -208,12 +203,35 @@ mod tests {
 	// for unit in &UNIT {
 	//   assert_eq!(ORIGIN.distance(unit), 1i32);
 	// }
-	assert_eq!(ORIGIN.distance(&UNIT[0]), 1i32);
-	assert_eq!(ORIGIN.distance(&UNIT[1]), 1i32);
-	assert_eq!(ORIGIN.distance(&UNIT[2]), 1i32);
-	assert_eq!(ORIGIN.distance(&UNIT[3]), 1i32);
-	assert_eq!(ORIGIN.distance(&UNIT[4]), 1i32);
-	assert_eq!(ORIGIN.distance(&UNIT[5]), 1i32);
+	assert_eq!(ORIGIN.distance(&UNIT[0]), 1);
+	assert_eq!(ORIGIN.distance(&UNIT[1]), 1);
+	assert_eq!(ORIGIN.distance(&UNIT[2]), 1);
+	assert_eq!(ORIGIN.distance(&UNIT[3]), 1);
+	assert_eq!(ORIGIN.distance(&UNIT[4]), 1);
+	assert_eq!(ORIGIN.distance(&UNIT[5]), 1);
+    }
+
+    #[test]
+    fn test_float() {
+	// it should change a Point to a tuple with two f32 matching the input
+	let p1 = Point { hx: 4, hy: -3 };
+	let f1 = (4.0, -3.0);
+
+	let t1 = p1.float();
+	    
+	assert_eq!(t1.0, f1.0);
+	assert_eq!(t1.1, f1.1);
+	assert_eq!(p1.hx as f32, f1.0);
+	assert_eq!(p1.hy as f32, f1.1);
+    }
+
+    #[test]
+    fn test_interpolate() {
+	
+    }
+
+    #[test]
+    fn test_round() {
 	
     }
 
