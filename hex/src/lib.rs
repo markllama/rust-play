@@ -17,7 +17,7 @@
 /// and so can be converted from one to the other if needed. 
 
 /// Each hex location is defined by two integers, hx and hy
-#[derive(Debug)] 
+#[derive(Debug,Clone,PartialEq)] 
 pub struct Point {
     hx: i32,
     hy: i32
@@ -60,7 +60,12 @@ impl Point {
     pub fn sub(&self, other: &Point) -> Point {
 	Point { hx: self.hx - other.hx, hy: self.hy - other.hy }
     }
-    
+
+    /// Multiply a hex vector by a scalar
+    pub fn mul(&self, times: i32) -> Point {
+	Point { hx: self.hx * times, hy: self.hy * times }
+    }
+
     /// Distance is the maximum of the differences of the axes, but
     /// because they are related by subtraction you can
     /// just add the three and divide by 2.
@@ -70,25 +75,58 @@ impl Point {
 	(diff.hx.abs() + (diff.hx + diff.hy).abs() + diff.hy.abs()) / 2
     }
 
-    // pub fn line(&self, other: Point -> Vec<Point> {
-    // 	// How long is the line?
-    // 	let dist = self.distance(other);
+    fn float(&self) -> (f32, f32) {
+	(self.hx as f32, self.hy as f32)
+    }
+    
+    fn interpolate(&self, end: &Point) -> Vec<(f32, f32)> {
+	// use f32 steps for the path between two hexes
+	// and trust the compiler to optimize all the casting
 
-    // 	// create an empty vector for the hexes in the line
-    // 	let line Vec<Point> = vec![];
+	let len = self.distance(&end);
+	let self_f32 = self.float();
+	let diff_f32 = self.sub(&end).float();
 
-    // 	// interpolate for each line
-    // 	for i in 0..(dist-1) {
-    // 	    // get the f32 interpolated location
+	// find points along the real line that corresponds to the
+	// hexes between the two end points
+	// there are N+1 points because the line is inclusive
+	// I can probably make this much more clever and inscrutable even than this:
+	(0..len+1).map(
+	    | i | {
+		// 
+		let fraction = i as f32 / len as f32 ;
+		(
+		    fraction * (diff_f32.0 + self_f32.0),
+		    fraction * (diff_f32.1 + self_f32.1)
+		)
+	    }
+	).collect()
+    }
 
-    // 	    // reduce back to int
+    /// determine which hex contains this point
+    fn round(fp: &(f32, f32)) -> Point {
+	// reduce them to integer...ish
+	let rx = fp.0.round();
+	let ry = fp.1.round();
 
-	    
-    // 	}
+	// get the fractional part, with sign?
+	let frx = fp.0 - rx;
+	let fry = fp.1 - ry;
 
+	// 
+	if frx.abs() >= fry.abs() {
+	    Point { hx: (rx + (frx + 0.5*fry)) as i32, hy: ry as i32 }
+	} else {
+	    Point { hx: rx as i32, hy: (ry + (frx*0.5 + fry)) as i32 }
+	}	
+    }
+    
+    pub fn line(&self, other: &Point) -> Vec<Point> {
+     	// How long is the line?
 
-	
-    // }
+     	// create an empty vector for the hexes in the line
+     	self.interpolate(other).iter().map( | p | Point::round(p) ).collect()
+    }
 }
 
 #[cfg(test)]
@@ -179,5 +217,8 @@ mod tests {
 	
     }
 
-    // test_line()
+    #[test]
+    fn test_line() {
+	
+    }
 }
