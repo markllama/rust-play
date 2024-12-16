@@ -70,17 +70,12 @@ impl Point {
 	(diff.hx.abs() + (diff.hx + diff.hy).abs() + diff.hy.abs()) / 2
     }
 
-    fn float(&self) -> (f32, f32) {
-	(self.hx as f32, self.hy as f32)
-    }
-    
     fn interpolate(&self, end: &Point) -> Vec<(f32, f32)> {
 	// use f32 steps for the path between two hexes
 	// and trust the compiler to optimize all the casting
 
 	let len = self.distance(&end);
-	let self_f32 = self.float();
-	let diff_f32 = self.sub(&end).float();
+	let diff = end.sub(&self);
 
 	// find points along the real line that corresponds to the
 	// hexes between the two end points
@@ -91,8 +86,8 @@ impl Point {
 		// 
 		let fraction = i as f32 / len as f32 ;
 		(
-		    fraction * (diff_f32.0 + self_f32.0),
-		    fraction * (diff_f32.1 + self_f32.1)
+		    fraction * diff.hx as f32 + self.hx as f32,
+		    fraction * diff.hy as f32 + self.hy as f32
 		)
 	    }
 	).collect()
@@ -101,19 +96,10 @@ impl Point {
     /// determine which hex contains this point
     fn round(fp: &(f32, f32)) -> Point {
 	// reduce them to integer...ish
-	let rx = fp.0.round();
-	let ry = fp.1.round();
+	let rx = fp.0.round() as i32;
+	let ry = fp.1.round() as i32;
 
-	// get the fractional part, with sign?
-	let frx = fp.0 - rx;
-	let fry = fp.1 - ry;
-
-	// 
-	if frx.abs() >= fry.abs() {
-	    Point { hx: (rx + (frx + 0.5*fry)) as i32, hy: ry as i32 }
-	} else {
-	    Point { hx: rx as i32, hy: (ry + (frx*0.5 + fry)) as i32 }
-	}	
+	Point { hx: rx, hy: ry }
     }
     
     pub fn line(&self, other: &Point) -> Vec<Point> {
@@ -212,26 +198,71 @@ mod tests {
     }
 
     #[test]
-    fn test_float() {
-	// it should change a Point to a tuple with two f32 matching the input
-	let p1 = Point { hx: 4, hy: -3 };
-	let f1 = (4.0, -3.0);
-
-	let t1 = p1.float();
-	    
-	assert_eq!(t1.0, f1.0);
-	assert_eq!(t1.1, f1.1);
-	assert_eq!(p1.hx as f32, f1.0);
-	assert_eq!(p1.hy as f32, f1.1);
-    }
-
-    #[test]
     fn test_interpolate() {
+	let p1 = Point { hx: -3, hy: 3 };
+	let p2 = Point { hx: 3, hy: 8 };
+	let len = p1.distance(&p2);
+	let f_line = p1.interpolate(&p2);
+
+	let f_line_test = [
+	    (-3.0, 3.0),
+	    (-2.4545455, 3.4545455),
+	    (-1.9090909, 3.909091),
+	    (-1.3636363, 4.3636365),
+	    (-0.81818175, 4.818182),
+	    (-0.27272725, 5.272727),
+	    (0.2727275, 5.727273),
+	    (0.81818175, 6.181818),
+	    (1.3636365, 6.636364),
+	    (1.909091, 7.090909),
+	    (2.4545455, 7.5454545),
+	    (3.0, 8.0)
+	];
 	
+	assert_eq!(f_line.len() as i32, len+1);
+	assert_eq!(f_line.len(), 12);
+
+	assert_eq!((p1.hx as f32, p1.hy as f32), f_line[0]);
+	assert_eq!((p2.hx as f32, p2.hy as f32), f_line[f_line.len()-1]);
+
+	assert_eq!(f_line, f_line_test);
     }
 
     #[test]
     fn test_round() {
+	let f_line_test = [
+	    (-3.0, 3.0),
+	    (-2.4545455, 3.4545455),
+	    (-1.9090909, 3.909091),
+	    (-1.3636363, 4.3636365),
+	    (-0.81818175, 4.818182),
+	    (-0.27272725, 5.272727),
+	    (0.2727275, 5.727273),
+	    (0.81818175, 6.181818),
+	    (1.3636365, 6.636364),
+	    (1.909091, 7.090909),
+	    (2.4545455, 7.5454545),
+	    (3.0, 8.0)
+	];
+
+	let line_test = [
+	    Point { hx: -3, hy: 3 },
+	    Point { hx: -2, hy: 3 },
+	    Point { hx: -2, hy: 4 },
+	    Point { hx: -1, hy: 4 },
+	    Point { hx: -1, hy: 5 },
+	    Point { hx: 0, hy: 5 },
+	    Point { hx: 0, hy: 6 },
+	    Point { hx: 1, hy: 6 },
+	    Point { hx: 1, hy: 7 },
+	    Point { hx: 2, hy: 7 },
+	    Point { hx: 2, hy: 8 } // fix this one
+	];
+
+	for i in 0..line_test.len() {
+	    println!("{}", i);
+	    assert_eq!(Point::round(&f_line_test[i]), line_test[i]);
+	};
 	
     }
 
