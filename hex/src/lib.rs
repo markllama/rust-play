@@ -172,4 +172,26 @@ mod tests {
 	assert_eq!(ORIGIN.distance(&UNIT[4]), 1);
 	assert_eq!(ORIGIN.distance(&UNIT[5]), 1);
     }
+
+    #[test]
+    fn test_interpolate() {
+	// check that each point along a line is calculated correctly
+	// first line is straight on the hx axis
+
+	// length = 7
+	let pair1 = ( ORIGIN, Point { hx: 6, hy: 0} );
+	for i in 0..6 {
+	    let r = pair1.0.interpolate(&pair1.1,  i as f32 / 6.0);
+	    println!("{i} : {:#?}", r);
+	    assert_eq!(r, Point { hx: i, hy: 0 });
+	}
+
+    	// length = 7
+	let pair1 = ( ORIGIN, Point { hx: 0, hy: 6} );
+	for i in 0..6 {
+	    let r = pair1.0.interpolate(&pair1.1,  i as f32 / 6.0);
+	    println!("{i} : {:#?}", r);
+	    assert_eq!(r, Point { hx: 0, hy: i });
+	}
+    }
 }
