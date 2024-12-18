@@ -224,11 +224,13 @@ mod tests {
 	}
 
 	// check on the axes through the origin
-	let pair3 = ( Point { hx: -6, hy: 0}, Point { hx: 6, hy: 0} );
-	for i in 0..13 {
-	    let r = pair3.0.interpolate(&pair3.1, i as f32 / 12.0);
-	    println!("{i} : {:#?}", r);
-	    assert_eq!(r, Point { hx: i-6, hy: 0 });
+	for h in 0..5 {
+	    let pair3 = ( Point { hx: -6, hy: 0}, Point { hx: 6, hy: 0} );
+	    for i in 0..13 {
+		let r = pair3.0.interpolate(&pair3.1, i as f32 / 12.0);
+		println!("{i} : {:#?}", r);
+		assert_eq!(r, Point { hx: i-6, hy: 0 });
+	    }
 	}
 	// for i in 6..0 {
 	//     let r = pair1.1.interpolate(&pair1.0,  i as f32 / 6.0);
