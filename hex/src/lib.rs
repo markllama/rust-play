@@ -72,13 +72,13 @@ impl Point {
 
     pub fn line(&self, other: &Point) -> Vec<Point> {
 	let n = self.distance(other) + 1;
-	let diff = other.sub(self);
 	(0..n).map( | i |
-	    self.interpolate(&diff, i as f32 / n as f32)
+	    self.interpolate(&other, i as f32 / n as f32)
 	).collect()
     }
 
-    fn interpolate(&self, diff: &Point, fraction: f32) -> Point {
+    fn interpolate(&self, other: &Point, fraction: f32) -> Point {
+	let diff = other.sub(self);
 	Point {
 	    hx: (self.hx as f32 + (diff.hx as f32 * fraction)).round() as i32,
 	    hy: (self.hy as f32 + (diff.hy as f32 * fraction)).round() as i32
@@ -178,20 +178,74 @@ mod tests {
 	// check that each point along a line is calculated correctly
 	// first line is straight on the hx axis
 
-	// length = 7
+	// test interpolating the origin and units
+	for h in 0..5 {
+	    for i in 0..1 {
+		let r0 = ORIGIN.interpolate(&UNIT[h], 0.0);
+		println!("{i} : {:#?}", r0);
+		assert_eq!(r0, ORIGIN);
+		let r1 = ORIGIN.interpolate(&UNIT[h], 1.0);
+		println!("{i} : {:#?}", r1);
+		assert_eq!(r1, UNIT[h]);
+
+		let r2 = UNIT[h].interpolate(&ORIGIN, 0.0);
+		println!("{i} : {:#?}", r2);
+		assert_eq!(r2, UNIT[h]);
+		let r3 = UNIT[h].interpolate(&ORIGIN, 1.0);
+		println!("{i} : {:#?}", r3);
+		assert_eq!(r3, ORIGIN);
+	    }
+	}
+
+	
+	// check long lines along the axes from the origin
 	let pair1 = ( ORIGIN, Point { hx: 6, hy: 0} );
 	for i in 0..6 {
 	    let r = pair1.0.interpolate(&pair1.1,  i as f32 / 6.0);
 	    println!("{i} : {:#?}", r);
 	    assert_eq!(r, Point { hx: i, hy: 0 });
 	}
+	for i in 6..0 {
+	    let r = pair1.1.interpolate(&pair1.0,  i as f32 / 6.0);
+	    println!("{i} : {:#?}", r);
+	    assert_eq!(r, Point { hx: i, hy: 0 });
+	}
 
-    	// length = 7
-	let pair1 = ( ORIGIN, Point { hx: 0, hy: 6} );
+	let pair2 = ( ORIGIN, Point { hx: 0, hy: 6} );
 	for i in 0..6 {
-	    let r = pair1.0.interpolate(&pair1.1,  i as f32 / 6.0);
+	    let r = pair2.0.interpolate(&pair2.1,  i as f32 / 6.0);
 	    println!("{i} : {:#?}", r);
 	    assert_eq!(r, Point { hx: 0, hy: i });
 	}
+	for i in 6..0 {
+	    let r = pair2.1.interpolate(&pair2.0,  i as f32 / 6.0);
+	    println!("{i} : {:#?}", r);
+	    assert_eq!(r, Point { hx: i, hy: 0 });
+	}
+
+	// check on the axes through the origin
+	let pair3 = ( Point { hx: -6, hy: 0}, Point { hx: 6, hy: 0} );
+	for i in 0..13 {
+	    let r = pair3.0.interpolate(&pair3.1, i as f32 / 12.0);
+	    println!("{i} : {:#?}", r);
+	    assert_eq!(r, Point { hx: i-6, hy: 0 });
+	}
+	// for i in 6..0 {
+	//     let r = pair1.1.interpolate(&pair1.0,  i as f32 / 6.0);
+	//     println!("{i} : {:#?}", r);
+	//     assert_eq!(r, Point { hx: i, hy: 0 });
+	// }
+
+	// let pair4 = ( ORIGIN, Point { hx: 0, hy: 6} );
+	// for i in 0..6 {
+	//     let r = pair2.0.interpolate(&pair2.1,  i as f32 / 6.0);
+	//     println!("{i} : {:#?}", r);
+	//     assert_eq!(r, Point { hx: 0, hy: i });
+	// }
+	// for i in 6..0 {
+	//     let r = pair2.1.interpolate(&pair2.0,  i as f32 / 6.0);
+	//     println!("{i} : {:#?}", r);
+	//     assert_eq!(r, Point { hx: i, hy: 0 });
+	// }
     }
 }
