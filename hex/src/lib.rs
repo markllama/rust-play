@@ -277,4 +277,21 @@ mod tests {
 	    assert_eq!(r, ((UNIT[0] * radius) + (UNIT[0].invert() * i)));
 	}
     }
+
+    #[test]
+    fn test_line() {
+	// test interpolating the origin and units
+	for h in 0..5 {
+	    let expect: Vec<Point> = vec!(ORIGIN, UNIT[h]);
+	    let actual = ORIGIN.line(&UNIT[h]);
+	    assert_eq!(expect, actual);
+	}
+    
+	for h in 0..5 {
+	    let expect: Vec<Point> = vec!(UNIT[h], ORIGIN, UNIT[(h + 3) % 6]);
+	    let actual = UNIT[h].line(&UNIT[(h + 3) % 6]);
+	    assert_eq!(expect, actual);
+	}
+
+    }
 }
