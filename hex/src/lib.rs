@@ -18,6 +18,10 @@
 
 use std::ops::{Add, Sub, Mul};
 
+// this pulled in a LOT of stuff and could be a tuple of f32 for one internal call.
+// But Learning
+use geo::geometry::Coord;
+
 /// Each hex location is defined by two integers, hx and hy
 #[derive(Clone, Copy, Debug, PartialEq)] 
 pub struct Point {
@@ -73,6 +77,11 @@ impl Point {
 	self.hy - self.hx
     }
 
+    /// Get a vector pointing in the opposite direction
+    pub fn invert(&self) -> Point {
+	Point { hx: self.hx * -1, hy: self.hy * -1 }
+    }
+    
     /// Distance is the maximum of the differences of the axes, but
     /// because they are related by subtraction you can
     /// just add the three and divide by 2.
@@ -82,19 +91,27 @@ impl Point {
 	(diff.hx.abs() + (diff.hx + diff.hy).abs() + diff.hy.abs()) / 2
     }
 
-    pub fn line(&self, other: &Point) -> Vec<Point> {
-	let n = self.distance(other) + 1;
-	(0..n).map( | i |
-	    self.interpolate(&other, i as f32 / n as f32)
-	).collect()
+    // find the delta for a single hex in a line
+    // (dx / n+1, dy / n+1)
+    fn slope(&self, other: &Point) -> Coord<f32> {
+	let length = self.distance(other) as f32;
+	let diff = *other - *self;
+	Coord { x: diff.hx as f32 / length, y: diff.hy as f32 / length }
     }
 
-    fn interpolate(&self, other: &Point, fraction: f32) -> Point {
-	let diff = *other - *self;
+    // find a hex along the line
+    fn interpolate(&self, other: &Point, step: i32) -> Point {
+	let slope = self.slope(other);
 	Point {
-	    hx: (self.hx as f32 + (diff.hx as f32 * fraction)).round() as i32,
-	    hy: (self.hy as f32 + (diff.hy as f32 * fraction)).round() as i32
+	    hx: ((self.hx as f32 + (step as f32 * slope.x).round()) as i32),
+	    hy: ((self.hy as f32 + (step as f32 * slope.y).round()) as i32)
 	}
+    }
+
+    pub fn line(&self, other: &Point) -> Vec<Point> {	
+	(0..self.distance(other)+1).map( | i |
+	    self.interpolate(&other, i)
+	).collect()
     }
 }
 
@@ -195,6 +212,18 @@ mod tests {
     }
 
     #[test]
+    fn test_slope() {
+	// Find the delta for a single hex so that I can
+
+	let ends = ( Point { hx: 4, hy: 9 }, Point { hx: 7, hy: -2 });
+	let slope1 = ends.0.slope(&ends.1);
+
+	assert_eq!(slope1.x, (7.0 - 4.0) / 11.0);
+	assert_eq!(slope1.y, (-2.0 - 9.0) / 11.0);
+    }
+
+    
+    #[test]
     fn test_interpolate() {
 	// check that each point along a line is calculated correctly
 	// first line is straight on the hx axis
@@ -202,73 +231,50 @@ mod tests {
 	// test interpolating the origin and units
 	for h in 0..5 {
 	    for i in 0..1 {
-		let r0 = ORIGIN.interpolate(&UNIT[h], 0.0);
-		println!("{i} : {:#?}", r0);
+		let r0 = ORIGIN.interpolate(&UNIT[h], i);
+		// println!("{i} : {:#?}", r0);
 		assert_eq!(r0, ORIGIN);
-		let r1 = ORIGIN.interpolate(&UNIT[h], 1.0);
-		println!("{i} : {:#?}", r1);
-		assert_eq!(r1, UNIT[h]);
-
-		let r2 = UNIT[h].interpolate(&ORIGIN, 0.0);
-		println!("{i} : {:#?}", r2);
+		let r2 = UNIT[h].interpolate(&ORIGIN, i);
+		// println!("{i} : {:#?}", r2);
 		assert_eq!(r2, UNIT[h]);
-		let r3 = UNIT[h].interpolate(&ORIGIN, 1.0);
-		println!("{i} : {:#?}", r3);
-		assert_eq!(r3, ORIGIN);
 	    }
 	}
-
-	
+    
 	// check long lines along the axes from the origin
 	let pair1 = ( ORIGIN, Point { hx: 6, hy: 0} );
 	for i in 0..6 {
-	    let r = pair1.0.interpolate(&pair1.1,  i as f32 / 6.0);
-	    println!("{i} : {:#?}", r);
+	    let r = pair1.0.interpolate(&pair1.1,  i);
+	    // println!("{i} : {:#?}", r);
 	    assert_eq!(r, Point { hx: i, hy: 0 });
 	}
 	for i in 6..0 {
-	    let r = pair1.1.interpolate(&pair1.0,  i as f32 / 6.0);
-	    println!("{i} : {:#?}", r);
+	    let r = pair1.1.interpolate(&pair1.0,  i);
+	    // println!("{i} : {:#?}", r);
 	    assert_eq!(r, Point { hx: i, hy: 0 });
 	}
 
 	let pair2 = ( ORIGIN, Point { hx: 0, hy: 6} );
 	for i in 0..6 {
-	    let r = pair2.0.interpolate(&pair2.1,  i as f32 / 6.0);
-	    println!("{i} : {:#?}", r);
+	    let r = pair2.0.interpolate(&pair2.1,  i);
+	    // println!("{i} : {:#?}", r);
 	    assert_eq!(r, Point { hx: 0, hy: i });
 	}
 	for i in 6..0 {
-	    let r = pair2.1.interpolate(&pair2.0,  i as f32 / 6.0);
-	    println!("{i} : {:#?}", r);
+	    let r = pair2.1.interpolate(&pair2.0,  i);
+	    // println!("{i} : {:#?}", r);
 	    assert_eq!(r, Point { hx: i, hy: 0 });
 	}
 
 	// check on the axes through the origin
-	for h in 0..5 {
-	    let pair3 = ( Point { hx: -6, hy: 0}, Point { hx: 6, hy: 0} );
-	    for i in 0..13 {
-		let r = pair3.0.interpolate(&pair3.1, i as f32 / 12.0);
-		println!("{i} : {:#?}", r);
-		assert_eq!(r, Point { hx: i-6, hy: 0 });
-	    }
+	let radius = 5;
+	let n_hexes = radius * 2 + 1;
+	let pair = ( UNIT[0] * radius, UNIT[0] * -radius );
+	println!("Test Values: {:?}", pair);
+	for i in 0..n_hexes+1 {
+	    let r = pair.0.interpolate(&pair.1, i);
+	    //pair.0 + ( ORIGIN + (UNIT[0] * (i - radius)));
+	    println!("{i} : {:#?}", r);	
+	    assert_eq!(r, ((UNIT[0] * radius) + (UNIT[0].invert() * i)));
 	}
-	// for i in 6..0 {
-	//     let r = pair1.1.interpolate(&pair1.0,  i as f32 / 6.0);
-	//     println!("{i} : {:#?}", r);
-	//     assert_eq!(r, Point { hx: i, hy: 0 });
-	// }
-
-	// let pair4 = ( ORIGIN, Point { hx: 0, hy: 6} );
-	// for i in 0..6 {
-	//     let r = pair2.0.interpolate(&pair2.1,  i as f32 / 6.0);
-	//     println!("{i} : {:#?}", r);
-	//     assert_eq!(r, Point { hx: 0, hy: i });
-	// }
-	// for i in 6..0 {
-	//     let r = pair2.1.interpolate(&pair2.0,  i as f32 / 6.0);
-	//     println!("{i} : {:#?}", r);
-	//     assert_eq!(r, Point { hx: i, hy: 0 });
-	// }
     }
 }
