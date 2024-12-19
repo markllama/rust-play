@@ -286,10 +286,22 @@ mod tests {
 	    let actual = ORIGIN.line(&UNIT[h]);
 	    assert_eq!(expect, actual);
 	}
-    
+
+	// test lines through the origin along the axes of the unit vectors
 	for h in 0..5 {
 	    let expect: Vec<Point> = vec!(UNIT[h], ORIGIN, UNIT[(h + 3) % 6]);
 	    let actual = UNIT[h].line(&UNIT[(h + 3) % 6]);
+	    assert_eq!(expect, actual);
+	}
+
+	// test longer lines through the origin
+	for h in 0..5 {
+	    let expect: Vec<Point> = (0..11).map(
+		{
+		    | i | UNIT[h] * 5 + UNIT[(h + 3) % 6] * i
+		}
+	    ).collect();
+	    let actual = (UNIT[h] * 5).line(&(UNIT[(h + 3) % 6] * 5));
 	    assert_eq!(expect, actual);
 	}
 
