@@ -146,7 +146,7 @@ impl Point {
     }
 
     // https://www.redblobgames.com/grids/hexagons/#range-coordinate
-    pub fn range(&self, dist: i32) -> Vec<Point> {
+    pub fn region(&self, dist: i32) -> Vec<Point> {
 	let mut range: Vec<Point> = vec!();
 
 	for hx in -dist..dist+1 {
@@ -395,25 +395,24 @@ mod tests {
     }
 
     #[test]
-    fn test_range() {
+    fn test_region() {
 
-	let r0 = ORIGIN.range(0);
+	let r0 = ORIGIN.region(0);
 	assert_eq!(1, r0.len());
 
-	let r1 = ORIGIN.range(1);
+	let r1 = ORIGIN.region(1);
 	assert_eq!(7, r1.len());
 
-	let r2 = ORIGIN.range(2);
-	println!("range: {:?}", r2);
+	let r2 = ORIGIN.region(2);
 	assert_eq!(19, r2.len());
 
-	let r3 = ORIGIN.range(3);
+	let r3 = ORIGIN.region(3);
 	assert_eq!(37, r3.len());
 
-	let r4 = UNIT[0].range(2);
+	let r4 = UNIT[0].region(2);
 	assert_eq!(19, r4.len());
 
-	let r5 = Point { hx: 14, hy: -3 }.range(2);
+	let r5 = Point { hx: 14, hy: -3 }.region(2);
 	assert_eq!(19, r5.len());
 
     }
