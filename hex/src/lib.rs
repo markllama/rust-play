@@ -145,16 +145,12 @@ impl Point {
 	).collect()
     }
 
-    pub fn range(&self, distance: i32) -> Vec<Point> {
+    pub fn range(&self, dist: i32) -> Vec<Point> {
 	let mut range: Vec<Point> = vec!();
 
-	for hx in -distance..distance+1 {
-	    for hy in -distance..distance+1 {
-		for hz in -distance..distance+1 {
-		    if (hx + hy + hz) == 0 {
-			range.push(Point { hx: hx, hy: hy });
-		    }
-		}
+	for hx in -dist..dist+1 {
+	    for hy in -dist.max(-hx - dist)..dist.min(-hx+dist) {
+		range.push(self + Point( hx: hx, hy: hy));
 	    }
 	}
 	range
