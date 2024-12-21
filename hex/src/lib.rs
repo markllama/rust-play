@@ -82,6 +82,28 @@ impl Point {
 	Point { hx: self.hx * -1, hy: self.hy * -1 }
     }
 
+    /// reflect around one axis. Invert the other two axes
+    pub fn reflect(&self, axis: i32 ) -> Point {
+	match axis.rem_euclid(3) {
+	    0 => Point { hx: self.hx, hy: self.hz() },
+	    1 => Point { hx: self.hz(), hy: self.hy },
+	    2 => Point { hx: self.hy, hy: self.hx },
+	    _ => ORIGIN
+	}
+    }
+
+    pub fn reflect_hx(&self) -> Point {
+	Point { hx: self.hx, hy: self.hz() }
+    }
+
+    pub fn reflect_hy(&self) -> Point {
+	Point { hx: self.hz(), hy: self.hy }	
+    }
+
+    pub fn reflect_hz(&self) -> Point {
+	Point { hx: self.hy, hy:  self.hx }
+    }
+    
     pub fn rotate(&self, hextant: i32) -> Point {
 	// reduce the rotation to one full cycle at most
 	let rot = hextant.rem_euclid(3) as usize;
@@ -90,7 +112,7 @@ impl Point {
 	let ring = [self.hx, self.hy, self.hz(), self.hx, self.hy];
 	Point { hx: ring[rot] * invert, hy: ring[rot+1] * invert }
     }
- 
+
     /// Distance is the maximum of the differences of the axes, but
     /// because they are related by subtraction you can
     /// just add the three and divide by 2.
@@ -121,6 +143,21 @@ impl Point {
 	(0..self.distance(other)+1).map( | i |
 	    self.interpolate(&other, i)
 	).collect()
+    }
+
+    pub fn range(&self, distance: i32) -> Vec<Point> {
+	let mut range: Vec<Point> = vec!();
+
+	for hx in -distance..distance+1 {
+	    for hy in -distance..distance+1 {
+		for hz in -distance..distance+1 {
+		    if (hx + hy + hz) == 0 {
+			range.push(Point { hx: hx, hy: hy });
+		    }
+		}
+	    }
+	}
+	range
     }
 }
 
@@ -358,5 +395,24 @@ mod tests {
 // 	}
 // 	assert!(false)
 	
+    }
+
+    #[test]
+    fn test_range() {
+
+	let r0 = ORIGIN.range(0);
+	assert_eq!(1, r0.len());
+
+	let r1 = ORIGIN.range(1);
+	assert_eq!(7, r1.len());
+
+	let r2 = ORIGIN.range(2);
+	assert_eq!(19, r2.len());
+
+	let r3 = ORIGIN.range(3);
+	assert_eq!(37, r3.len());
+
+	let r4 = UNIT[0].range(2);
+	assert_eq!(19, r4.len());
     }
 }
