@@ -81,7 +81,16 @@ impl Point {
     pub fn invert(&self) -> Point {
 	Point { hx: self.hx * -1, hy: self.hy * -1 }
     }
-    
+
+    pub fn rotate(&self, hextant: i32) -> Point {
+	// reduce the rotation to one full cycle at most
+	let rot = hextant.rem_euclid(3) as usize;
+	println!("hextant: {}, rot: {}", hextant, rot);
+	let invert = if hextant.rem_euclid(2) == 0 { 1 } else {-1 };
+	let ring = [self.hx, self.hy, self.hz(), self.hx, self.hy];
+	Point { hx: ring[rot] * invert, hy: ring[rot+1] * invert }
+    }
+ 
     /// Distance is the maximum of the differences of the axes, but
     /// because they are related by subtraction you can
     /// just add the three and divide by 2.
@@ -166,6 +175,31 @@ mod tests {
 	assert_eq!(1, Point { hx: 0, hy: 1 }.hz() );
 	assert_eq!(4, Point { hx: -2, hy: 2 }.hz() );
 	assert_eq!(-8, Point { hx: 9, hy: 1 }.hz() );
+    }
+
+    // test_invert()
+
+    // test_rotate()
+    #[test]
+    fn test_rotate() {
+	let first = Point { hx: 1, hy: -4 };
+
+	assert_eq!( first, first.rotate(0));
+	assert_eq!( first, first.rotate(6));
+	assert_eq!( first, first.rotate(-6));
+	
+	assert_eq!( Point { hx: first.hy * -1, hy: first.hz() * -1 }, first.rotate(1));
+	assert_eq!( Point { hx: first.hy * -1, hy: first.hz() * -1 }, first.rotate(7));
+	assert_eq!( Point { hx: first.hz() * -1, hy: first.hx * -1 }, first.rotate(-1));
+	assert_eq!( Point { hx: first.hz() * -1, hy: first.hx * -1 }, first.rotate(-7));
+
+	assert_eq!( Point { hx: first.hz(), hy: first.hx }, first.rotate(2));
+	assert_eq!( Point { hx: first.hx * -1, hy: first.hy * -1 }, first.rotate(3));
+	assert_eq!( first.invert(), first.rotate(3));
+	assert_eq!( first.invert(), first.rotate(-3));
+
+	assert_eq!( Point { hx: first.hz() * -1, hy: first.hx * -1 }, first.rotate(5));
+
     }
 
     // test_add()
@@ -305,5 +339,24 @@ mod tests {
 	    assert_eq!(expect, actual);
 	}
 
+
+	// test each of the rings around the origin
+// 	for radius in 1..6 {
+// 	    // test lines in each arc
+// 	    for hextant in 0..6 {
+// 		for step in 0..radius+1 {
+// 		    let end = Point { hx: radius, hy: -radius + step }.rotate(hextant);
+// 		    //
+// 		    // let expected = 
+// 		    //
+// 		    let actual = ORIGIN.line(&end);
+// 		    println!("radius: {} hextant: {} step: {}, end: {:?}\nactual {:?} :", radius, hextant, step, end, actual)
+// //		    println!("Step: {}, Hextant: {}, Radius {}", step, hextant, radius);
+// 		}
+// 	    }
+	    
+// 	}
+// 	assert!(false)
+	
     }
 }
