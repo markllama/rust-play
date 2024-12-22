@@ -54,6 +54,14 @@ mod tests {
 	assert_eq!(-8, Point { hx: 9, hy: 1 }.hz() );
     }
 
+    // test_neighbor
+    #[test]
+    fn test_neighbor() {
+	for i in 0..6 {
+	    assert_eq!(ORIGIN.neighbor(i), UNIT[i as usize])
+	}
+    }
+    
     // test_invert()
 
     // test_rotate()
@@ -258,5 +266,17 @@ mod tests {
 	let r5 = Point { hx: 14, hy: -3 }.region(2);
 	assert_eq!(19, r5.len());
 
+    }
+
+    #[test]
+    fn test_ring() {
+
+	// check single hex
+	assert_eq!(ORIGIN.ring(0), vec!(ORIGIN));
+	assert_eq!(Point { hx: -3, hy: 4 }.ring(0), vec!(Point {hx: -3, hy: 4 }));
+
+	assert_eq!(ORIGIN.ring(1), vec!(UNIT[4], UNIT[5], UNIT[0], UNIT[1], UNIT[2], UNIT[3]));
+
+	
     }
 }

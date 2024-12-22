@@ -166,7 +166,7 @@ impl Point {
 	    return vec!(*self);
 	}
 
-	let mut next = UNIT[0] * radius.abs();
+	let mut next = UNIT[4] * radius.abs();
 	let mut ring = vec!();
 	
 	for hextant in 0..6 {
