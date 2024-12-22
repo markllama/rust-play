@@ -76,6 +76,10 @@ impl Point {
 	self.hy - self.hx
     }
 
+    pub fn neighbor(&self, direction: i32) -> Point {
+	*self + UNIT[(direction.rem_euclid(6)) as usize]
+    }
+    
     /// Get a vector pointing in the opposite direction
     pub fn invert(&self) -> Point {
 	Point { hx: self.hx * -1, hy: self.hy * -1 }
@@ -154,5 +158,23 @@ impl Point {
 	    }
 	}
 	range
+    }
+
+    pub fn ring(&self, radius: i32) -> Vec<Point> {
+
+	if radius == 0 {
+	    return vec!(*self);
+	}
+
+	let mut next = UNIT[0] * radius.abs();
+	let mut ring = vec!();
+	
+	for hextant in 0..6 {
+	    for _step in 0..radius {
+		ring.push(next);
+		next = next.neighbor(hextant); 
+	    }
+	}
+	ring
     }
 }
