@@ -276,7 +276,23 @@ mod tests {
 	assert_eq!(Point { hx: -3, hy: 4 }.ring(0), vec!(Point {hx: -3, hy: 4 }));
 
 	assert_eq!(ORIGIN.ring(1), vec!(UNIT[4], UNIT[5], UNIT[0], UNIT[1], UNIT[2], UNIT[3]));
-
 	
+    }
+
+    #[test]
+    fn test_spiral() {
+	assert_eq!(ORIGIN.spiral(0), vec!(ORIGIN));
+	assert_eq!(Point { hx: -3, hy: 4 }.spiral(0), vec!(Point {hx: -3, hy: 4 }));
+
+	assert_eq!(ORIGIN.spiral(1).len(), 7);
+	assert_eq!(ORIGIN.spiral(2).len(), 19);
+
+	let mut spiral = ORIGIN.spiral(0);
+	spiral.extend(ORIGIN.ring(1));
+	assert_eq!(ORIGIN.spiral(1), spiral);
+	spiral.extend(ORIGIN.ring(2));
+	assert_eq!(ORIGIN.spiral(2), spiral);
+	
+
     }
 }

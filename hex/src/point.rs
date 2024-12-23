@@ -177,4 +177,13 @@ impl Point {
 	}
 	ring
     }
+
+    pub fn spiral(&self, radius: i32) -> Vec<Point> {
+
+	let mut spiral = vec!(*self);
+	for range in 1..radius+1 {
+	    spiral.append(& mut self.ring(range));
+	}
+	spiral
+    }
 }
