@@ -3,6 +3,7 @@
 //
 use crate::point::Point;
 
+#[derive(Debug,PartialEq)]
 pub struct Hex {
     location: Point,
 //    terrain: Vec<Terrain>,

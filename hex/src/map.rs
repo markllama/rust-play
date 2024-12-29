@@ -23,7 +23,7 @@ pub struct Row {
 }
 
 impl Row {
-    fn New() -> Row {
+    fn new() -> Row {
 	Row { row: vec!() }
     }
 
@@ -51,11 +51,11 @@ pub struct Map {
 
 impl Map {
     
-    fn New(shape: Shape, orientation: Orientation, size: Point, origin: Point) -> Map {
+    fn new(shape: Shape, orientation: Orientation, size: Point, origin: Point) -> Map {
 	let mut rows: Vec<Row> = vec!();
 
 	for i in 0..size.hx {
-	    rows.push(Row::New());
+	    rows.push(Row::new());
 	    for j in 0..size.hy {
 		rows[i as usize].push(Hex::new (Point { hx: i + origin.hx, hy: j + origin.hy }));
 	    }
@@ -65,11 +65,22 @@ impl Map {
     }
 }
 
+impl Index<usize> for Map {
+
+    type Output = Row;
+
+    fn index(&self, loc: usize) -> &Row {
+	&(self.rows[loc])
+    }
+}
+
 #[cfg(test)]
 
 #[test]
 fn test_map_new() {
-    let m0 = Map::New(Shape::Rectangle, Orientation::Vertical, Point { hx: 5, hy: 6 }, ORIGIN);
+    let m0 = Map::new(Shape::Rectangle, Orientation::Vertical, Point { hx: 5, hy: 6 }, ORIGIN);
 
     assert_eq!(m0.size.hx, 5);
+
+    assert_eq!(m0[2][3], Hex::new (Point { hx: 2, hy: 3 }))
 }
